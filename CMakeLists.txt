@@ -26,7 +26,7 @@ target_link_libraries(ChatClient PUBLIC Threads::Threads)
 
 # Create the chat client executable
 add_executable(main_chat_client 
-    src/main.cpp
+    src/main/main.cpp
 )
 
 # Link the chat client with our library
