@@ -1,0 +1,45 @@
+name: Build Chat Application
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: windows-latest
+            cmake_generator: "Visual Studio 17 2022"
+          - os: ubuntu-latest
+            cmake_generator: "Unix Makefiles"
+          - os: macos-latest
+            cmake_generator: "Unix Makefiles"
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Create Build Directory
+      run: cmake -E make_directory ${{github.workspace}}/build
+
+    - name: Configure CMake
+      working-directory: ${{github.workspace}}/build
+      run: |
+        cmake .. -G "${{ matrix.cmake_generator }}"
+
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build . --config Release
+
+    - name: Archive artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: chat-client-${{ matrix.os }}
+        path: |
+          ${{github.workspace}}/build/**/chat_client*
+          !${{github.workspace}}/build/**/*.{obj,cpp}
