@@ -4,6 +4,13 @@
 #include <string>
 #include <thread>
 #include <atomic>
+#include <iostream>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <string.h>
+#include <sstream>
 
 // La classe ChatClient fornisce un'interfaccia per connettersi a un server di chat
 class ChatClient {
