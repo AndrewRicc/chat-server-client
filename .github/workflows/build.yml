@@ -28,5 +28,5 @@ jobs:
       with:
         name: binary-${{ matrix.os }}
         path: |
-          ${{github.workspace}}/build/main
-          ${{github.workspace}}/build/main.exe
+          ${{github.workspace}}/build/main_chat_client
+          ${{github.workspace}}/build/main_chat_client.exe
