@@ -12,22 +12,22 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Threads REQUIRED)
 
 # Add library target
-add_library(chatlib
-    src/ChatClient.cpp
+add_library(ChatClient
+    src/lib/ChatClient/src/ChatClient.cpp
 )
 
 # Add include directories for the library
-target_include_directories(chatlib PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
+target_include_directories(ChatClient PUBLIC
+    src/lib/ChatClient/include
 )
 
 # Link threading library
-target_link_libraries(chatlib PUBLIC Threads::Threads)
+target_link_libraries(ChatClient PUBLIC Threads::Threads)
 
 # Create the chat client executable
-add_executable(chat_client 
+add_executable(main_chat_client 
     src/main.cpp
 )
 
 # Link the chat client with our library
-target_link_libraries(chat_client PRIVATE chatlib)
+target_link_libraries(main_chat_client PRIVATE ChatClient)
