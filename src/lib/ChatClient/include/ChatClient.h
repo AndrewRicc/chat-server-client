@@ -5,6 +5,7 @@
 #include <string>
 #include <thread>
 #include <atomic>
+#include <vector>
 
 class ChatClient {
 private:
