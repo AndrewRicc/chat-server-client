@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.10)
 project(ChatApplication VERSION 1.0)
 
 # Specify C++ standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Find required packages
@@ -26,7 +26,7 @@ target_link_libraries(ChatClient PUBLIC Threads::Threads)
 
 # Create the chat client executable
 add_executable(main_chat_client 
-    src/main/main.cpp
+    src/main/client_chat.cpp
 )
 
 # Link the chat client with our library

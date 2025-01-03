@@ -4,7 +4,6 @@
 #include <string>
 #include <thread>
 #include <atomic>
-#include <vector>
 
 // La classe ChatClient fornisce un'interfaccia per connettersi a un server di chat
 class ChatClient {
