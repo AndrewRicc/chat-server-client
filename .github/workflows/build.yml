@@ -12,21 +12,32 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: windows-latest
+            generator: "Visual Studio 17 2022"
+            config: Release
+          - os: ubuntu-latest
+            generator: "Unix Makefiles"
+            config: Release
+          - os: macos-latest
+            generator: "Unix Makefiles"
+            config: Release
 
     steps:
     - uses: actions/checkout@v3
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release
+      run: cmake -B ${{github.workspace}}/build -G "${{ matrix.generator }}" -DCMAKE_BUILD_TYPE=${{ matrix.config }}
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/build --config Release
+      run: cmake --build ${{github.workspace}}/build --config ${{ matrix.config }}
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: binary-${{ matrix.os }}
         path: |
+          ${{github.workspace}}/build/${{ matrix.config }}/main_chat_client.exe
           ${{github.workspace}}/build/main_chat_client
-          ${{github.workspace}}/build/main_chat_client.exe
+        if-no-files-found: ignore

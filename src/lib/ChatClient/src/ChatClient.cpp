@@ -1,13 +1,8 @@
 #include "ChatClient.h"
 #include <iostream>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <string.h>
 #include <sstream>
+#include <string.h>
 
-// Costruttore
 ChatClient::ChatClient(
     const std::string& nickname,
     const std::string& serverIp,
@@ -18,11 +13,10 @@ ChatClient::ChatClient(
     nickname(nickname),
     port(port),
     bufferSize(bufferSize),
-    socketFd(-1),
+    socketFd(SOCKET_ERROR_VALUE),
     running(false)
 {}
 
-// Costruttore di movimento
 ChatClient::ChatClient(ChatClient&& other) noexcept :
     serverIp(std::move(other.serverIp)),
     port(other.port),
@@ -31,32 +25,26 @@ ChatClient::ChatClient(ChatClient&& other) noexcept :
     socketFd(other.socketFd),
     running(other.running.load())
 {
-    other.socketFd = -1;
+    other.socketFd = SOCKET_ERROR_VALUE;
     other.running = false;
 }
 
-// Operatore di assegnazione di movimento
 ChatClient& ChatClient::operator=(ChatClient&& other) noexcept {
     if (this != &other) {
-        // Chiudi le risorse esistenti
         stop();
-
-        // Muovi i dati
         serverIp = std::move(other.serverIp);
         port = other.port;
         bufferSize = other.bufferSize;
         nickname = std::move(other.nickname);
         socketFd = other.socketFd;
         running = other.running.load();
-
-        // Invalida l'altro oggetto
-        other.socketFd = -1;
+        
+        other.socketFd = SOCKET_ERROR_VALUE;
         other.running = false;
     }
     return *this;
 }
 
-// Distruttore
 ChatClient::~ChatClient() {
     stop();
 }
@@ -64,9 +52,9 @@ ChatClient::~ChatClient() {
 void ChatClient::stop() {
     running = false;
     
-    if (socketFd != -1) {
-        close(socketFd);
-        socketFd = -1;
+    if (socketFd != SOCKET_ERROR_VALUE) {
+        CLOSE_SOCKET(socketFd);
+        socketFd = SOCKET_ERROR_VALUE;
     }
     
     if (receiveThread.joinable()) {
@@ -74,14 +62,12 @@ void ChatClient::stop() {
     }
 }
 
-// Formatta il messaggio con il nickname
 std::string ChatClient::formatMessage(const std::string& message) {
     std::stringstream ss;
     ss << "[" << nickname << "] " << message;
     return ss.str();
 }
 
-// Gestisce la ricezione dei messaggi
 void ChatClient::receiveMessages() {
     std::vector<char> buffer(bufferSize);
     
@@ -90,9 +76,12 @@ void ChatClient::receiveMessages() {
         int bytesRead = recv(socketFd, buffer.data(), bufferSize - 1, 0);
         
         if (bytesRead <= 0) {
-            std::cout << "\nDisconnesso dal server." << std::endl;
-            running = false;
-            break;
+            if (!wouldBlock()) {
+                std::cout << "\nDisconnesso dal server." << std::endl;
+                running = false;
+                break;
+            }
+            continue;
         }
         
         std::cout << "\r" << buffer.data() << std::endl;
@@ -100,16 +89,13 @@ void ChatClient::receiveMessages() {
     }
 }
 
-// Connette al server
 bool ChatClient::connect() {
-    // Crea il socket
     socketFd = socket(AF_INET, SOCK_STREAM, 0);
-    if (socketFd == -1) {
+    if (socketFd == SOCKET_ERROR_VALUE) {
         std::cerr << "Errore nella creazione del socket" << std::endl;
         return false;
     }
 
-    // Configura l'indirizzo del server
     struct sockaddr_in serverAddr;
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_port = htons(port);
@@ -119,7 +105,6 @@ bool ChatClient::connect() {
         return false;
     }
 
-    // Connette al server
     if (::connect(socketFd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
         std::cerr << "Errore nella connessione al server" << std::endl;
         return false;
@@ -127,7 +112,6 @@ bool ChatClient::connect() {
 
     std::cout << "Connesso al server come " << nickname << "!" << std::endl;
     
-    // Invia il nickname
     std::string initialMsg = "NICKNAME:" + nickname;
     if (send(socketFd, initialMsg.c_str(), initialMsg.length(), 0) < 0) {
         std::cerr << "Errore nell'invio del nickname" << std::endl;
@@ -139,7 +123,6 @@ bool ChatClient::connect() {
     return true;
 }
 
-// Loop principale della chat
 void ChatClient::run() {
     std::string message;
     std::cout << "\nInzia a scrivere i tuoi messaggi (scrivi 'quit' per uscire):" << std::endl;

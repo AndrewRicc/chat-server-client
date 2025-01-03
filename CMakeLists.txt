@@ -1,14 +1,18 @@
-# Set minimum CMake version
 cmake_minimum_required(VERSION 3.10)
 
-# Project name and version
 project(ChatApplication VERSION 1.0)
 
-# Specify C++ standard
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Find required packages
+# Platform-specific configurations
+if(WIN32)
+    add_definitions(-D_WIN32_WINNT=0x0601)
+    set(PLATFORM_LIBS ws2_32)
+else()
+    set(PLATFORM_LIBS "")
+endif()
+
 find_package(Threads REQUIRED)
 
 # Add library target
@@ -21,8 +25,12 @@ target_include_directories(ChatClient PUBLIC
     src/lib/ChatClient/include
 )
 
-# Link threading library
-target_link_libraries(ChatClient PUBLIC Threads::Threads)
+# Link platform-specific libraries
+target_link_libraries(ChatClient 
+    PUBLIC 
+        Threads::Threads
+        ${PLATFORM_LIBS}
+)
 
 # Create the chat client executable
 add_executable(main_chat_client 
@@ -30,4 +38,7 @@ add_executable(main_chat_client
 )
 
 # Link the chat client with our library
-target_link_libraries(main_chat_client PRIVATE ChatClient)
+target_link_libraries(main_chat_client 
+    PRIVATE 
+        ChatClient
+)
