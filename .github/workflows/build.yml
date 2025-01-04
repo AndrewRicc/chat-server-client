@@ -38,6 +38,6 @@ jobs:
       with:
         name: binary-${{ matrix.os }}
         path: |
-          ${{github.workspace}}/build/${{ matrix.config }}/main_chat_client.exe
-          ${{github.workspace}}/build/main_chat_client
+          ${{github.workspace}}/build/${{ matrix.config }}/chat_client.exe
+          ${{github.workspace}}/build/chat_client
         if-no-files-found: ignore
