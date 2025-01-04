@@ -3,8 +3,6 @@ name: Build Chat Application
 on:
   push:
     branches: [ "main" ]
-    tags:
-      - 'v*.*.*'
   pull_request:
     branches: [ "main" ]
 
@@ -19,15 +17,12 @@ jobs:
           - os: windows-latest
             generator: "Visual Studio 17 2022"
             config: Release
-            artifact_path: build/Release/main_chat_client.exe
           - os: ubuntu-latest
             generator: "Unix Makefiles"
             config: Release
-            artifact_path: build/main_chat_client
           - os: macos-latest
             generator: "Unix Makefiles"
             config: Release
-            artifact_path: build/main_chat_client
 
     steps:
     - uses: actions/checkout@v3
@@ -41,26 +36,8 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: chat-client-${{ matrix.os }}
-        path: ${{ matrix.artifact_path }}
-        if-no-files-found: error
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
-    
-    steps:
-    - name: Download all artifacts
-      uses: actions/download-artifact@v4
-      with:
-        path: artifacts
-        
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: |
-          artifacts/chat-client-windows-latest/*
-          artifacts/chat-client-ubuntu-latest/*
-          artifacts/chat-client-macos-latest/*
-        generate_release_notes: true
+        name: binary-${{ matrix.os }}
+        path: |
+          ${{github.workspace}}/build/${{ matrix.config }}/main_chat_client.exe
+          ${{github.workspace}}/build/main_chat_client
+        if-no-files-found: ignore
