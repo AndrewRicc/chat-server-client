@@ -50,13 +50,6 @@ std::string getIpAddressFromUser() {
         
         // Verifica i caratteri validi
         isValid = true;
-        for (char c : ip_address) {
-            if (!std::isalnum(c)) {
-                std::cout << "L'indirizzo IP può contenere solo lettere e numeri." << std::endl;
-                isValid = false;
-                break;
-            }
-        }
     }
     
     return ip_address;
