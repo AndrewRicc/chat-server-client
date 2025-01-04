@@ -33,12 +33,11 @@ target_link_libraries(ChatClient
 )
 
 # Create the chat client executable
-add_executable(main_chat_client 
+add_executable(chat_client 
     src/main/client_chat.cpp
 )
 
 # Link the chat client with our library
-target_link_libraries(main_chat_client 
-    PRIVATE 
-        ChatClient
+target_link_libraries(chat_client 
+    PRIVATE ChatClient
 )
